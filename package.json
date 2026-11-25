@@ -1,0 +1,16 @@
+{
+  "name": "tien-bo-rai-v100",
+  "version": "100.0.0",
+  "private": true,
+  "description": "Tien Bo Rai V100 KEY System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1"
+  }
+}
