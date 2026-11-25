@@ -1,0 +1,127 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ADMIN - TIẾN BỜ RAI V100</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:22px;background:#080817;color:white;font-family:Arial}
+.container{max-width:430px;margin:auto}
+h1{text-align:center;color:#b68aff;margin:40px 0}
+.panel{background:#17172c;border:1px solid #514078;border-radius:17px;padding:20px;margin-bottom:18px}
+h2{text-align:center;color:#b68aff}
+input,select{width:100%;padding:15px;margin:10px 0;background:#090918;border:1px solid #514078;border-radius:9px;color:white;font-size:15px}
+button{width:100%;padding:15px;margin-top:10px;border:0;border-radius:10px;color:white;font-weight:bold;background:linear-gradient(90deg,#743cff,#00bde9)}
+#dashboard{display:none}
+.key{background:#24203e;padding:15px;margin:12px 0;border-radius:10px;overflow-wrap:anywhere}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>✦ TIẾN BỜ RAI ✦</h1>
+<div class="panel" id="login">
+<h2>ADMIN LOGIN</h2>
+<input id="username" placeholder="Tên Admin">
+<input id="password" type="password" placeholder="Mật khẩu">
+<button onclick="adminLogin()">ĐĂNG NHẬP</button>
+<p id="message"></p>
+</div>
+<div id="dashboard">
+<div class="panel">
+<h2>TẠO KEY MỚI</h2>
+<select id="duration">
+<option value="1">1 ngày</option>
+<option value="7">7 ngày</option>
+<option value="30">30 ngày</option>
+<option value="365">365 ngày</option>
+<option value="0">Vĩnh viễn</option>
+</select>
+<button onclick="createKey()">TẠO KEY</button>
+<div id="result"></div>
+</div>
+<div class="panel">
+<h2>DANH SÁCH KEY</h2>
+<button onclick="loadKeys()">TẢI DANH SÁCH</button>
+<div id="keys"></div>
+</div>
+<button onclick="logout()">ĐĂNG XUẤT</button>
+</div>
+</div>
+<script>
+let token='';
+async function api(url,options={}){
+ options.headers={'Content-Type':'application/json','Authorization':'Bearer '+token};
+ const r=await fetch(url,options);
+ const d=await r.json();
+ if(!r.ok)throw Error(d.message||'Có lỗi');
+ return d;
+}
+async function adminLogin(){
+ try{
+ const d=await api('/api/admin/login',{
+ method:'POST',
+ body:JSON.stringify({
+ username:document.getElementById('username').value,
+ password:document.getElementById('password').value
+ })
+ });
+ token=d.token;
+ document.getElementById('login').style.display='none';
+ document.getElementById('dashboard').style.display='block';
+ loadKeys();
+ }catch(e){document.getElementById('message').textContent=e.message}
+}
+async function createKey(){
+ try{
+ const d=await api('/api/admin/keys',{
+ method:'POST',
+ body:JSON.stringify({days:Number(document.getElementById('duration').value)})
+ });
+ const result=document.getElementById('result');
+ result.replaceChildren();
+ const box=document.createElement('div');
+ box.className='key';
+ box.textContent='KEY: '+d.key;
+ result.appendChild(box);
+ const b=document.createElement('button');
+ b.textContent='SAO CHÉP KEY';
+ b.onclick=()=>navigator.clipboard.writeText(d.key);
+ result.appendChild(b);
+ loadKeys();
+ }catch(e){alert(e.message)}
+}
+async function loadKeys(){
+ try{
+ const d=await api('/api/admin/keys');
+ const area=document.getElementById('keys');
+ area.replaceChildren();
+ d.keys.forEach(k=>{
+ const div=document.createElement('div');
+ div.className='key';
+ div.textContent=k.key+' - '+(k.active?'Đang hoạt động':'Đã khóa');
+ const b=document.createElement('button');
+ b.textContent=k.active?'KHÓA KEY':'MỞ KHÓA KEY';
+ b.onclick=()=>toggleKey(k.id,!k.active);
+ div.appendChild(b);
+ area.appendChild(div);
+ });
+ }catch(e){alert(e.message)}
+}
+async function toggleKey(id,active){
+ try{
+ await api('/api/admin/keys/'+id,{
+ method:'PATCH',body:JSON.stringify({active})
+ });
+ loadKeys();
+ }catch(e){alert(e.message)}
+}
+function logout(){
+ token='';
+ document.getElementById('dashboard').style.display='none';
+ document.getElementById('login').style.display='block';
+}
+</script>
+</body>
+</html>
