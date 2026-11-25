@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TIẾN BỜ RAI V100</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:25px;background:#080817;color:white;font-family:Arial}
+h1{text-align:center;color:#b68aff;margin:45px 0}
+.panel{background:#17172c;border:1px solid #514078;border-radius:18px;padding:22px;max-width:430px;margin:auto}
+h2{text-align:center;color:#bd9aff}
+input{width:100%;padding:16px;margin:15px 0;background:#090918;border:1px solid #514078;border-radius:10px;color:white;font-size:16px}
+button{width:100%;padding:15px;border:0;border-radius:10px;background:linear-gradient(90deg,#743cff,#00bde9);color:white;font-weight:bold;font-size:16px}
+p{text-align:center;color:#aaa}
+#home{display:none}
+</style>
+</head>
+<body>
+<h1>✦ TIẾN BỜ RAI ✦</h1>
+<div class="panel" id="login">
+<h2>ĐĂNG NHẬP V100</h2>
+<input id="key" placeholder="NHẬP KEY">
+<button onclick="login()">ĐĂNG NHẬP</button>
+<p id="msg">KEY SYSTEM V100</p>
+</div>
+<div class="panel" id="home">
+<h2>ĐĂNG NHẬP THÀNH CÔNG</h2>
+<p>Chào mừng đến TIẾN BỜ RAI V100</p>
+<button onclick="logout()">ĐĂNG XUẤT</button>
+</div>
+<script>
+async function login(){
+ const key=document.getElementById('key').value.trim();
+ const msg=document.getElementById('msg');
+ if(!key){msg.textContent='Vui lòng nhập KEY';return}
+ msg.textContent='Đang kiểm tra...';
+ try{
+ const r=await fetch('/api/verify-key',{
+ method:'POST',
+ headers:{'Content-Type':'application/json'},
+ body:JSON.stringify({key})
+ });
+ const d=await r.json();
+ if(d.valid){
+ document.getElementById('login').style.display='none';
+ document.getElementById('home').style.display='block';
+ }else msg.textContent=d.message||'KEY không hợp lệ';
+ }catch(e){msg.textContent='Không kết nối được máy chủ'}
+}
+function logout(){
+ document.getElementById('home').style.display='none';
+ document.getElementById('login').style.display='block';
+}
+</script>
+</body>
+</html>
